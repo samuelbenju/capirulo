@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: tu_contraseña
+      MYSQL_DATABASE: sql
+    ports:
+      - "3306:3306"
+
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+aiomysql://root:tu_contraseña@db:3306/sql
+      - DATABASE_URL1=mysql+aiomysql://root:tu_contraseña@db:3306/sql_stock
+    depends_on:
+      - db

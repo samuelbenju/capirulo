@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Inventario - Sucursal {{ username }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f2f2f2;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .stock-table, .request-form, .sale-form {
+            background: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+        }
+        form input, form select, form button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenido, {{ username }}</h1>
+    <h2>Gestión de Stock - Sucursal Soacha</h2>
+
+    <!-- Buscar productos -->
+    <div class="stock-table">
+        <h3>Buscar Producto</h3>
+        <form method="get" action="/buscar">
+            <input type="text" name="query" placeholder="Nombre del producto">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="stock-table">
+        <h3>Productos Disponibles</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Sucursal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in productos %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.branch }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Solicitar stock -->
+    <div class="request-form">
+        <h3>Solicitar Producto a otra Sucursal</h3>
+        <form method="post" action="/solicitar-stock">
+            <input type="text" name="producto" placeholder="Nombre del producto">
+            <input type="number" name="cantidad" placeholder="Cantidad requerida">
+            <select name="sucursal_destino">
+                <option value="suba">Suba</option>
+                <option value="centro">Centro</option>
+                <option value="cedritos">Cedritos</option>
+                <option value="sanmateo">San Mateo</option>
+            </select>
+            <button type="submit">Enviar Solicitud</button>
+        </form>
+    </div>
+
+    <!-- Registrar venta -->
+    <div class="sale-form">
+        <h3>Registrar Venta</h3>
+        <form method="post" action="/registrar-venta">
+            <input type="text" name="producto" placeholder="Nombre del producto vendido">
+            <input type="number" name="cantidad" placeholder="Cantidad vendida">
+            <button type="submit">Registrar Venta</button>
+        </form>
+    </div>
+</body>
+</html>

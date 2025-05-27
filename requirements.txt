@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+authlib
+python-dotenv
+passlib[bcrypt]==1.7.4
+sqlalchemy
+aiomysql
+jinja2
+python-jose
+python-multipart
+pydantic[email]

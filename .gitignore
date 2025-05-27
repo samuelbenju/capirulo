@@ -1,0 +1,15 @@
+# Ignore environment files
+.env
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore SQLite database files
+*.sqlite3
+
+# Ignore logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
