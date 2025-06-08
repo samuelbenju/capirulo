@@ -27,8 +27,9 @@
                 <div id="passwordError" class="text-red-500 text-xs italic" style="display: none;"></div>
             </div>
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Iniciar Sesión</button>
-        </form>       
+        </form>
     </div>
+
     <script>
         const loginForm = document.getElementById('loginForm');
         const usernameInput = document.getElementById('username');
@@ -56,7 +57,7 @@
             errorElement.style.display = message ? "block" : "none";
         }
 
-        loginForm.addEventListener('submit', async (event) => {
+        loginForm.addEventListener('submit', (event) => {
             event.preventDefault();
 
             const username = usernameInput.value.trim();
@@ -72,29 +73,25 @@
                 return;
             }
 
-            try {
-                const response = await fetch('/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        username: username,
-                        password: password,
-                    }),
-                });
+            // ✅ Submit mediante formulario oculto para que el navegador siga el 303 correctamente
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/token';
 
-                if (response.ok) {
-                    // Redirect to stock.html
-                    window.location.href = '/stock';
-                } else {
-                    const text = await response.text();
-                    alert('Error al iniciar sesión: ' + text);
-                }
-            } catch (error) {
-                console.error('Error de red:', error);
-                alert('Error de red al iniciar sesión');
-            }
+            const userField = document.createElement('input');
+            userField.type = 'hidden';
+            userField.name = 'username';
+            userField.value = username;
+
+            const passField = document.createElement('input');
+            passField.type = 'hidden';
+            passField.name = 'password';
+            passField.value = password;
+
+            form.appendChild(userField);
+            form.appendChild(passField);
+            document.body.appendChild(form);
+            form.submit();
         });
     </script>
 </body>

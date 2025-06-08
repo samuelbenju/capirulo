@@ -1,34 +1,24 @@
-from fastapi import FastAPI, Depends, HTTPException, Form, Request, status
+from fastapi import FastAPI, Depends, Request, Form, HTTPException, Query, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from datetime import timedelta
 from contextlib import asynccontextmanager
 import os
 
-from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from database import get_session, init_db, SessionStock
-from auth import create_access_token, get_user, verify_password, get_current_user
-from schemas import User as PydanticUser
-from models import User, Stock
+from admin_routes import router as admin_router
 from stock_routes import router as stock_router
+from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from database import get_session, init_db
+from auth import create_access_token, get_user, verify_password
+from schemas import User as PydanticUser
+from models import User
 
-# ✅ Configurar Jinja2
+# Configuración de plantillas HTML
 templates_path = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=templates_path)
 
-# ✅ Plantillas por sucursal
-branch_templates = {
-    "soacha": "branchsoacha.html",
-    "suba": "branchsuba.html",
-    "centro": "branchcentro.html",
-    "cedritos": "branchcedritos.html",
-    "sanmateo": "branchsanmateo.html",
-    "admin": "administration.html"
-}
-
-# ✅ Inicialización del ciclo de vida
+# Inicialización del ciclo de vida de la app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("⏳ Inicializando aplicación...")
@@ -40,11 +30,14 @@ async def lifespan(app: FastAPI):
         raise
     yield
 
-# ✅ Instancia de la aplicación
+# Instancia principal de la aplicación FastAPI
 app = FastAPI(lifespan=lifespan)
-app.include_router(stock_router)
 
-# ✅ Ruta para obtener usuario
+# Montaje de routers
+app.include_router(stock_router, prefix="")
+app.include_router(admin_router, prefix="/admin")
+
+# Ruta para obtener datos de usuario por ID
 @app.get("/users/{user_id}", response_model=PydanticUser)
 async def get_user_endpoint(user_id: int, session: AsyncSession = Depends(get_session)):
     user = await session.get(User, user_id)
@@ -52,7 +45,7 @@ async def get_user_endpoint(user_id: int, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return user
 
-# ✅ Login y emisión de token
+# Ruta de login y emisión del token JWT
 @app.post("/token")
 async def login_access_token(
     request: Request,
@@ -79,20 +72,27 @@ async def login_access_token(
         key="Authorization",
         value=f"Bearer {access_token}",
         httponly=True,
+        secure=True,
+        samesite="Lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/"
     )
     return response
 
-# ✅ Página de inicio
+# Página de inicio con el login
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     try:
         return templates.TemplateResponse("login.html", {"request": request})
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"❌ No se pudo cargar login.html: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo cargar login.html: {e}")
 
-# ✅ Ejecución local
+# Ruta de depuración opcional
+@app.get("/debug", include_in_schema=False)
+async def debug(local_kw: str = Query(default=None)):
+    return {"mensaje": "Ruta debug capturó el parámetro local_kw", "local_kw": local_kw}
+
+# Ejecución local
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Ejecutando en modo local...")

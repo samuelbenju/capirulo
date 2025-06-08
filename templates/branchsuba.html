@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Inventario - Sucursal {{ username }}</title>
+    <title>Gestión de Inventario - Sucursal {{ username | default("Invitado") }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,6 +29,7 @@
         }
         th, td {
             padding: 10px;
+            text-align: left;
         }
         form input, form select, form button {
             padding: 10px;
@@ -39,63 +40,64 @@
     </style>
 </head>
 <body>
-    <h1>Bienvenido, {{ username }}</h1>
-    <h2>Gestión de Stock - Sucursal Soacha</h2>
+    <h1>Bienvenido, {{ username | default("Invitado") }}</h1>
+    <h2>Gestión de Stock - Sucursal Suba</h2>
 
-    <!-- Buscar productos -->
     <div class="stock-table">
         <h3>Buscar Producto</h3>
-        <form method="get" action="/buscar">
-            <input type="text" name="query" placeholder="Nombre del producto">
+        <form method="get" action="/stock/html">
+            <input type="text" name="search" placeholder="Nombre del producto">
             <button type="submit">Buscar</button>
         </form>
     </div>
 
-    <!-- Tabla de productos -->
     <div class="stock-table">
         <h3>Productos Disponibles</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Sucursal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in productos %}
-                <tr>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.branch }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% if productos is defined and productos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Sucursal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in productos %}
+                        <tr>
+                            <td>{{ item.name | default('N/A') }}</td>
+                            <td>{{ item.quantity | default('0') }}</td>
+                            <td>{{ item.branch | default('Sin sucursal') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay productos disponibles.</p>
+        {% endif %}
     </div>
 
-    <!-- Solicitar stock -->
     <div class="request-form">
         <h3>Solicitar Producto a otra Sucursal</h3>
         <form method="post" action="/solicitar-stock">
-            <input type="text" name="producto" placeholder="Nombre del producto">
-            <input type="number" name="cantidad" placeholder="Cantidad requerida">
-            <select name="sucursal_destino">
-                <option value="suba">Suba</option>
+            <input type="text" name="producto" placeholder="Nombre del producto" required>
+            <input type="number" name="cantidad" placeholder="Cantidad requerida" min="1" required>
+            <select name="sucursal_destino" required>
+                <option value="">Seleccione una sucursal</option>
                 <option value="centro">Centro</option>
                 <option value="cedritos">Cedritos</option>
                 <option value="sanmateo">San Mateo</option>
+                <option value="soacha">Soacha</option>
             </select>
             <button type="submit">Enviar Solicitud</button>
         </form>
     </div>
 
-    <!-- Registrar venta -->
     <div class="sale-form">
         <h3>Registrar Venta</h3>
         <form method="post" action="/registrar-venta">
-            <input type="text" name="producto" placeholder="Nombre del producto vendido">
-            <input type="number" name="cantidad" placeholder="Cantidad vendida">
+            <input type="text" name="producto" placeholder="Nombre del producto vendido" required>
+            <input type="number" name="cantidad" placeholder="Cantidad vendida" min="1" required>
             <button type="submit">Registrar Venta</button>
         </form>
     </div>
